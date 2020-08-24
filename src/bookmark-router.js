@@ -11,16 +11,26 @@ bookmarkRouter
     res.json(bookmarks);
   })
   .post(bodyParser, (req, res) => {
-    const { title, content } = req.body;
+    const { title, url, description, rating } = req.body;
+
+    if (!rating) {
+      logger.error(`Rating is required`);
+      return res.status(400).send("Invalid data - rating");
+    }
 
     if (!title) {
       logger.error(`Title is required`);
-      return res.status(400).send("Invalid data");
+      return res.status(400).send("Invalid data - title");
     }
 
-    if (!content) {
-      logger.error(`Content is required`);
-      return res.status(400).send("Invalid data");
+    if (!url) {
+      logger.error(`URL is required`);
+      return res.status(400).send("Invalid data - url");
+    }
+
+    if (!description) {
+      logger.error(`Description is required`);
+      return res.status(400).send("Invalid data - description");
     }
 
     // get an id
@@ -29,7 +39,9 @@ bookmarkRouter
     const bookmark = {
       id,
       title,
-      content,
+      url,
+      description,
+      rating,
     };
 
     bookmarks.push(bookmark);
@@ -39,7 +51,7 @@ bookmarkRouter
     res
       .status(201)
       .location(`http://localhost:8000/bookmark/${id}`)
-      .json(bookmark);
+      .json(bookmark.id);
   });
 
 bookmarkRouter
@@ -65,11 +77,6 @@ bookmarkRouter
       logger.error(`bookmark with id ${id} not found.`);
       return res.status(404).send("Not found");
     }
-
-    lists.forEach((list) => {
-      const bookmarkIds = list.bookmarkIds.filter((cid) => cid !== id);
-      list.bookmarkIds = bookmarkIds;
-    });
 
     bookmarks.splice(bookmarkIndex, 1);
 
